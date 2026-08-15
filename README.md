@@ -2,7 +2,8 @@
 
 **Skill-based viral pet mini-game.** Dodge the timeline. Survive. Collect hearts. Evolve Nix.
 
-**Live:** [https://viral-pet-nix.vercel.app](https://viral-pet-nix.vercel.app)  
+**Play:** [https://viral-pet-nix.vercel.app](https://viral-pet-nix.vercel.app)  
+**Repo:** [FahadIbrahim93/viral-pet-nix](https://github.com/FahadIbrahim93/viral-pet-nix)  
 **Version:** 2.2  
 **License:** MIT
 
@@ -109,6 +110,18 @@ git clone https://github.com/FahadIbrahim93/viral-pet-nix.git
 cd viral-pet-nix
 open index.html
 ```
+
+---
+
+## 🚢 Deploy / Hosting
+
+Preferred stable live host: **GitHub Pages**.
+
+- Repo settings → Pages → Source: `main` → `/` root
+- Expected stable URL: `https://fahadibrahim93.github.io/viral-pet-nix`
+- Alternative: any static host that serves `index.html` as root
+
+If you enable GitHub Pages, update the **Play** link above from Vercel to the Pages URL.
 
 ---
 
