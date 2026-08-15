@@ -2,7 +2,7 @@
 
 **Skill-based viral pet mini-game.** Dodge the timeline. Survive. Collect hearts. Evolve Nix.
 
-**Play:** [https://viral-pet-nix.vercel.app](https://viral-pet-nix.vercel.app)  
+**Play:** [https://fahadibrahim93.github.io/viral-pet-nix](https://fahadibrahim93.github.io/viral-pet-nix)  
 **Repo:** [FahadIbrahim93/viral-pet-nix](https://github.com/FahadIbrahim93/viral-pet-nix)  
 **Version:** 2.2  
 **License:** MIT
@@ -10,12 +10,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Single File](https://img.shields.io/badge/Single%20File-HTML-brightgreen)](index.html)
 [![No Dependencies](https://img.shields.io/badge/Dependencies-None-success)](index.html)
+[![GitHub Pages](https://img.shields.io/badge/Hosted%20on-GitHub%20Pages-222222?style=for-the-badge&logo=github)](https://fahadibrahim93.github.io/viral-pet-nix)
 
 ---
 
 ## 🎮 Play in 10 seconds
 
-1. Open the [live demo](https://viral-pet-nix.vercel.app) or open `index.html` locally
+1. Open the [live demo](https://fahadibrahim93.github.io/viral-pet-nix) or open `index.html` locally
 2. Tap **Start Run**
 3. Tap left / right half of the card (or arrow keys) to change lanes
 4. Dodge posts · grab hearts · near-miss for **CLEAN**
@@ -115,13 +116,8 @@ open index.html
 
 ## 🚢 Deploy / Hosting
 
-Preferred stable live host: **GitHub Pages**.
-
-- Repo settings → Pages → Source: `main` → `/` root
-- Expected stable URL: `https://fahadibrahim93.github.io/viral-pet-nix`
-- Alternative: any static host that serves `index.html` as root
-
-If you enable GitHub Pages, update the **Play** link above from Vercel to the Pages URL.
+- **Preferred:** GitHub Pages at `https://fahadibrahim93.github.io/viral-pet-nix`
+- **Alternative:** any static host that serves `index.html` as root
 
 ---
 
@@ -135,7 +131,7 @@ If you enable GitHub Pages, update the **Play** link above from Vercel to the Pa
 I scored [N] on Nix Timeline Dodge
 
 Near-miss for style. Streak for shield.
-Beat me → https://viral-pet-nix.vercel.app
+Beat me → https://fahadibrahim93.github.io/viral-pet-nix
 #ViralPet #Nix
 ```
 
