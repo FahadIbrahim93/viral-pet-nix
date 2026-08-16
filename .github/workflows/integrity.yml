@@ -1,0 +1,22 @@
+name: integrity
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify game file
+        run: |
+          test -f index.html
+          SIZE=$(wc -c < index.html)
+          echo "index.html size: $SIZE"
+          test "$SIZE" -gt 20000
+          grep -q "NEAR_MISS" index.html
+          grep -q "function startRun" index.html
+          grep -q "function spendCare" index.html
+          grep -q "makeScoreCard\|cardBtn" index.html
+          grep -q "runTests" index.html
+          echo "integrity ok"
