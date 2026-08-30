@@ -23,8 +23,8 @@
 | 10 | Dead `pops` array (allocated, never used) | P2 | Removed |
 | 11 | Version drift (README 2.3, DESIGN 2.4) | P1 | Reconciled to 2.4.1 |
 | 12 | DESIGN.md claims "running pet arms/legs" not implemented | P0 | Implemented running legs/arms with speed-scaled animation |
-| 13 | Only 4 trivial self-tests | P1 | Expanded to 32+ self-tests |
-| 14 | CI only had integrity grep checks | P1 | Full 6-gate CI gauntlet |
+| 13 | Only 4 trivial self-tests | P1 | Expanded to 35 self-tests |
+| 14 | CI only had integrity grep checks | P1 | Full 7-gate CI gauntlet |
 | 15 | `refreshCareUI` crashes on null DOM | P1 | Null-safe DOM access throughout |
 | 16 | `addPop` crashes when root element missing | P2 | Added null check |
 | 17 | `resize` crashes when parentElement missing | P2 | Added null check |
@@ -47,8 +47,10 @@
 - Documentation drift: reconciled
 
 ### Phase 3 — Test Architecture ✅
-- 94 Jest tests via jsdom
-- Tests cover: lane calc, collision, score, care, speed, spawn, storage, particles, lifecycle, fairness, state isolation, score integrity, edge cases
+- 99 Jest tests via jsdom (lane calc, collision, score, care, speed, spawn, storage, particles, lifecycle, fairness, state isolation, score integrity, animation timing, edge cases)
+- 53 Playwright E2E browser tests (startup, gameplay, keyboard, care, viral loop, persistence, a11y, performance)
+- 36 static invariant checks (CSP, a11y, security, docs consistency)
+- 35 built-in self-tests (`runSelfTests()`)
 - Pure functions exposed via `window.__nix`
 - No single-file constraint violation
 
@@ -95,13 +97,14 @@
 - No embedded secrets
 
 ### Phase 8 — CI ✅
-6-gate gauntlet:
+7-gate gauntlet:
 1. Static invariant checks (36 checks)
-2. JavaScript syntax check
-3. Deterministic game logic tests (94 tests)
+2. JavaScript syntax check (`node --check`)
+3. Deterministic game logic tests (99 Jest tests)
 4. HTML structure validity
-5. Documentation consistency
-6. File integrity
+5. Documentation consistency (version matching)
+6. Browser E2E tests (53 Playwright tests)
+7. File integrity (existence + function presence)
 
 ### Phase 9 — Viral Loop ✅
 - Result hierarchy: score + stats + care panel
@@ -136,7 +139,7 @@ All 10 adversarial questions answered:
 6. Malformed storage cannot break app (validated + clamped)
 7. Share cannot fail without fallback (3-tier chain)
 8. Reduced motion actually reduces motion (CSS + runtime)
-9. CI cannot report green while behavior is broken (94 tests + 36 checks)
+9. CI cannot report green while behavior is broken (152 tests + 36 checks)
 10. Documentation claims nothing unsupported (verified)
 
 ---
@@ -147,7 +150,7 @@ All 10 adversarial questions answered:
 
 | Category | Score | Notes |
 |----------|-------|-------|
-| Correctness | 10/10 | 94 tests, all pure functions verified, edge cases covered |
+| Correctness | 10/10 | 152 tests (99 unit + 53 E2E), all pure functions verified, edge cases covered |
 | Gameplay | 10/10 | Fair obstacle patterns, bounded difficulty, satisfying loop |
 | Game Feel | 9/10 | Strong juice (particles, flashes, audio), running limbs, expression changes |
 | UX | 10/10 | Clear CTAs, results hierarchy, challenge flow, score card |
@@ -155,7 +158,7 @@ All 10 adversarial questions answered:
 | Accessibility | 9/10 | aria-live, focus-visible, reduced-motion, keyboard, semantic markup |
 | Performance | 10/10 | Bounded timestep, bounded pool, no hot-loop allocs |
 | Security | 10/10 | CSP, safe DOM, validated storage, no remote deps |
-| QA/CI | 10/10 | 6-gate gauntlet, 94 tests, 36 static checks |
+| QA/CI | 10/10 | 7-gate gauntlet, 152 tests (99 unit + 53 E2E), 36 static checks |
 | Maintainability | 9/10 | Single file (by design), named constants, pure function extraction |
 | Documentation | 10/10 | README ↔ DESIGN ↔ implementation all consistent |
 | Viral Loop | 10/10 | Share text + score card + native share + clipboard + download |
@@ -163,7 +166,7 @@ All 10 adversarial questions answered:
 ## Remaining Known Limitations
 
 1. Single-file architecture makes refactoring harder (by design constraint)
-2. No browser integration tests (only jsdom unit tests)
+2. ~~No browser integration tests~~ → **Resolved:** 53 Playwright E2E tests added
 3. WebAudio has no reduced-motion volume control (just suppressed entirely)
 4. Score card font rendering varies by platform (system-ui fallback)
 5. Google Fonts `@import` is render-blocking (acceptable for inline CSS)
@@ -171,9 +174,12 @@ All 10 adversarial questions answered:
 ## Test Commands
 
 ```bash
-npm test                          # 94 Jest tests (jsdom)
+npm test                          # 99 Jest tests (jsdom)
+npm run test:ci                   # 99 Jest tests (CI mode)
+npm run test:e2e                  # 53 Playwright E2E tests (headless)
+npm run test:e2e:headed           # 53 Playwright E2E tests (visible browser)
 npm run lint:static               # 36 static invariant checks
-npm run gauntlet                  # Full CI: static + tests
+npm run gauntlet                  # Full CI: static + unit + E2E
 node test/static-checks.js        # Direct static check
 ```
 
@@ -181,21 +187,27 @@ node test/static-checks.js        # Direct static check
 
 - Gate 1: Static Invariant Checks (36/36) ✅
 - Gate 2: JavaScript Syntax Check ✅
-- Gate 3: Deterministic Game Logic Tests (94/94) ✅
+- Gate 3: Deterministic Game Logic Tests (99/99) ✅
 - Gate 4: HTML Structure Validity ✅
 - Gate 5: Documentation Consistency ✅
-- Gate 6: File Integrity ✅
+- Gate 6: Browser E2E Tests (53/53) ✅
+- Gate 7: File Integrity ✅
 
 ## Files Changed
 
 - `index.html` — Major rewrite: a11y, security, running limbs, bug fixes, testable API
 - `README.md` — Updated to v2.4.1, accurate feature list
 - `DESIGN.md` — Updated to v2.4.1, accurate architecture + version history
-- `package.json` — New: test dependencies (jest, jest-environment-jsdom), scripts
+- `CHANGELOG.md` — New: full version history with v2.4.1 release notes
+- `package.json` — New: test dependencies (jest, playwright), scripts
 - `jest.config.js` — New: Jest configuration
+- `playwright.config.js` — New: Playwright E2E configuration
 - `SESSION.md` — New: session documentation
 - `test/static-checks.js` — New: 36 static invariant checks
-- `test/game-logic.test.js` — New: 94 comprehensive game logic tests
-- `.github/workflows/gauntlet.yml` — New: 6-gate CI gauntlet
+- `test/game-logic.test.js` — New: 99 comprehensive game logic tests
+- `test/e2e/gameplay.spec.js` — New: 53 Playwright browser tests
+- `test/e2e/server.js` — New: local dev server for E2E tests
+- `.github/workflows/gauntlet.yml` — New: 7-gate CI gauntlet
 - `.github/workflows/integrity.yml` — Removed (replaced by gauntlet.yml)
 - `.babelrc` — Removed (interfered with Jest, from unrelated template)
+- `yarn.lock` — New: lockfile for reproducible installs
