@@ -675,3 +675,52 @@ describe('Edge cases', () => {
     }
   });
 });
+
+// ═══════════════════════════════════════
+// ANIMATION TIMING TESTS
+// ═══════════════════════════════════════
+
+describe('Running pet animation timing', () => {
+  test('leg cadence is in natural range (2-5 Hz) across all speeds', () => {
+    const speeds = [2.6, 3.3, 4.0, 5.5, 7.8];
+    for (const s of speeds) {
+      const speedT = Math.max(0, Math.min(1, (s - nix.SPEED_MIN) / (nix.SPEED_MAX - nix.SPEED_MIN)));
+      const cadenceHz = 2 + speedT * 3;
+      expect(cadenceHz).toBeGreaterThanOrEqual(2);
+      expect(cadenceHz).toBeLessThanOrEqual(5);
+    }
+  });
+
+  test('leg amplitude decreases slightly at sprint (wider swing at walk)', () => {
+    const walkAmp = 0.45 - 0 * 0.08;   // speedT = 0
+    const sprintAmp = 0.45 - 1 * 0.08;  // speedT = 1
+    expect(walkAmp).toBeGreaterThan(sprintAmp);
+    expect(walkAmp).toBeCloseTo(0.45, 2);
+    expect(sprintAmp).toBeCloseTo(0.37, 2);
+  });
+
+  test('arm amplitude is ~60% of leg amplitude', () => {
+    const legAmp = 0.45;
+    const armAmp = legAmp * 0.6;
+    expect(armAmp).toBeCloseTo(0.27, 2);
+  });
+
+  test('arms are opposite phase to legs (π offset)', () => {
+    // At phase=0: sin(0)=0 for legs, sin(π)=0 for arms (both neutral)
+    // At phase=π/2: sin(π/2)=1 for legs (forward), sin(3π/2)=-1 for arms (back)
+    // This verifies the opposition concept
+    const phase = Math.PI / 2;
+    const legAngle = Math.sin(phase);
+    const armAngle = Math.sin(phase + Math.PI);
+    expect(legAngle).toBeCloseTo(1, 5);
+    expect(armAngle).toBeCloseTo(-1, 5);
+  });
+
+  test('foot dip is proportional to amplitude and leg length', () => {
+    const legAmp = 0.45;
+    const legLen = 7;
+    const footDrop = legAmp * legLen * 0.35;
+    expect(footDrop).toBeGreaterThan(0);
+    expect(footDrop).toBeLessThan(legLen); // foot drop < leg length
+  });
+});

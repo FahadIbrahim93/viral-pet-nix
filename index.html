@@ -772,45 +772,55 @@ function drawPet(x,y,lean){
   else if(lives<=1)ctx.moveTo(-4,8),ctx.quadraticCurveTo(0,5,4,8);
   else ctx.arc(0,5.5,5.2,0.25,Math.PI-0.25);
   ctx.stroke();
-  /* Running legs (side-view locomotion during runs) */
+  /* Running limbs (side-view locomotion during runs) */
   if(mode==='running'&&!prefersReducedMotion){
-    const t2=performance.now();
-    const legSpeed=speed*0.06;
-    const legAngle=Math.sin(t2*legSpeed)*0.5;
+    const tSec=performance.now()*0.001;/* convert ms → seconds */
+    /* Map speed to cadence: 2Hz at min → 5Hz at max */
+    const speedT=Math.max(0,Math.min(1,(speed-nix.SPEED_MIN)/(nix.SPEED_MAX-nix.SPEED_MIN)));
+    const cadence=2+speedT*3;/* Hz */
+    const phase=tSec*cadence*Math.PI*2;/* full cycles per second */
+    /* Leg swing: ~25°→40° amplitude, decreases slightly at sprint */
+    const legAmp=0.45-speedT*0.08;
+    const legAngle=Math.sin(phase)*legAmp;
     const legLen=stage>=2?10:7;
-    const legY=18;
+    const hipY=18;
+    const footDrop=legAmp*legLen*0.35;/* foot dips at end of swing */
     ctx.strokeStyle=pal.body1;ctx.lineWidth=3;ctx.lineCap='round';
-    /* Left leg */
+    /* Left leg — hip joint, foot swings forward/back */
     ctx.beginPath();
-    ctx.moveTo(-6,legY);
-    ctx.lineTo(-6+Math.sin(legAngle)*legLen,legY+legLen);
+    ctx.moveTo(-6,hipY);
+    ctx.quadraticCurveTo(-6+Math.sin(legAngle)*legLen*0.5,hipY+legLen*0.6,-6+Math.sin(legAngle)*legLen,hipY+legLen+Math.max(0,Math.sin(legAngle))*footDrop);
     ctx.stroke();
-    /* Right leg (opposite phase) */
+    /* Right leg — opposite phase */
     ctx.beginPath();
-    ctx.moveTo(6,legY);
-    ctx.lineTo(6+Math.sin(-legAngle)*legLen,legY+legLen);
+    ctx.moveTo(6,hipY);
+    ctx.quadraticCurveTo(6+Math.sin(-legAngle)*legLen*0.5,hipY+legLen*0.6,6+Math.sin(-legAngle)*legLen,hipY+legLen+Math.max(0,Math.sin(-legAngle))*footDrop);
     ctx.stroke();
-    /* Arms (stage >= 2, cycle with speed) */
+    /* Arms (stage >= 2, opposite phase to legs, ~60% amplitude) */
     if(stage>=2){
-      const armAngle=Math.sin(t2*legSpeed+Math.PI)*0.4;
+      const armAmp=legAmp*0.6;
+      const armAngle=Math.sin(phase+Math.PI)*armAmp;/* π offset = opposite */
       const armLen=stage>=3?8:6;
+      const armY=2;
+      /* Left arm */
       ctx.beginPath();
-      ctx.moveTo(-14,2);
-      ctx.lineTo(-14+Math.sin(armAngle)*armLen,2+armLen*Math.cos(armAngle));
+      ctx.moveTo(-14,armY);
+      ctx.quadraticCurveTo(-14+Math.sin(armAngle)*armLen*0.6,armY+armLen*0.5,-14+Math.sin(armAngle)*armLen,armY+armLen*0.8);
       ctx.stroke();
+      /* Right arm */
       ctx.beginPath();
-      ctx.moveTo(14,2);
-      ctx.lineTo(14+Math.sin(-armAngle)*armLen,2+armLen*Math.cos(-armAngle));
+      ctx.moveTo(14,armY);
+      ctx.quadraticCurveTo(14+Math.sin(-armAngle)*armLen*0.6,armY+armLen*0.5,14+Math.sin(-armAngle)*armLen,armY+armLen*0.8);
       ctx.stroke();
     }
-    /* Motion dust */
+    /* Motion dust — drifts backward opposite to movement */
     if(speed>3.5){
       const dustCount=Math.min(4,((speed-3.5)/2)|0);
       for(let i=0;i<dustCount;i++){
-        const dx=-8+Math.random()*4;
+        const dx=-10-Math.random()*6;/* drift left (behind pet) */
         const dy=20+Math.random()*8;
         const ds=1.5+Math.random()*2;
-        ctx.globalAlpha=0.25*(1-(i/dustCount));
+        ctx.globalAlpha=0.22*(1-(i/dustCount));
         ctx.fillStyle='#a0a4a8';
         ctx.beginPath();ctx.arc(dx,dy,ds,0,Math.PI*2);ctx.fill();
       }
