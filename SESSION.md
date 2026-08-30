@@ -200,6 +200,7 @@ node test/static-checks.js        # Direct static check
 - `DESIGN.md` — Updated to v2.4.1, accurate architecture + version history
 - `CHANGELOG.md` — New: full version history with v2.4.1 release notes
 - `package.json` — New: test dependencies (jest, playwright), scripts
+- `package-lock.json` — Lockfile for reproducible installs
 - `jest.config.js` — New: Jest configuration
 - `playwright.config.js` — New: Playwright E2E configuration
 - `SESSION.md` — New: session documentation

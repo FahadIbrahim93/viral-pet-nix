@@ -108,9 +108,10 @@ Beat me → https://viral-pet-nix.vercel.app
 
 ```bash
 npm install
-npm test          # Run all 94+ game logic tests
-npm run lint:static  # Run static invariant checks
-npm run gauntlet  # Run full CI gauntlet (static + tests)
+npm test              # Run 99 Jest unit tests (jsdom)
+npm run test:e2e      # Run 53 Playwright E2E tests (headless)
+npm run lint:static   # Run 36 static invariant checks
+npm run gauntlet      # Run full CI gauntlet (static + unit + E2E)
 ```
 
 ---

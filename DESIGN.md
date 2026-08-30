@@ -25,7 +25,7 @@ Start Run → dodge posts (3 lanes) → collect hearts → multiplier/streak →
 - **Accessibility:** aria-live HUD, aria-label on all controls, visible focus indicators, prefers-reduced-motion (CSS + runtime), semantic roles, sr-only utility
 - **Security:** CSP meta tag, localStorage validation + clamping, safe DOM manipulation (no innerHTML with untrusted data), no remote script dependencies
 - **Performance:** bounded timestep (max 45ms), bounded particle pool, no allocations in hot loop, resize/DPR correctness
-- Deterministic tests via Jest + jsdom (94+ tests), static invariant checks, CI gauntlet
+- Deterministic tests via Jest + jsdom (99 tests), Playwright E2E (53 tests), static invariant checks (36), CI 7-gate gauntlet
 
 ## Stages
 
@@ -80,4 +80,4 @@ test/
 - **2.3** — Feel polish, care personality, challenge text + score card
 - **2.3.1** — Expanded tests, reduced-motion, a11y, CSP, CI integrity
 - **2.4** — Side-view running Nix with arms/legs, motion dust, start fix
-- **2.4.1** — Hardening: CSP, a11y (aria-live, focus-visible, reduced-motion), security (safe DOM, localStorage validation), running pet limbs, 94+ tests, CI gauntlet, dead code removal, viral loop improvements, documentation reconciliation
+- **2.4.1** — Hardening: CSP, a11y (aria-live, focus-visible, reduced-motion), security (safe DOM, localStorage validation), running pet limbs, 152 tests (99 unit + 53 E2E), 7-gate CI gauntlet, dead code removal, viral loop improvements, documentation reconciliation

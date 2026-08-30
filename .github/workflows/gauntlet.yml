@@ -42,7 +42,7 @@ jobs:
           node-version: '20'
       - run: npm ci
       - run: npm run test:ci
-        name: Jest test suite (94+ tests)
+        name: Jest test suite (99 tests)
 
   html-validity:
     name: "Gate 4: HTML Structure Validity"
