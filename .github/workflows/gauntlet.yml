@@ -1,0 +1,120 @@
+name: gauntlet
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  static-checks:
+    name: "Gate 1: Static Invariant Checks"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node test/static-checks.js
+        name: CSP, a11y, security, documentation consistency
+
+  syntax-check:
+    name: "Gate 2: JavaScript Syntax Check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Extract and syntax-check game script
+        run: |
+          # Extract the script content from index.html
+          SCRIPT=$(sed -n '/<script>/,/<\/script>/p' index.html | sed '1d;$d')
+          echo "$SCRIPT" > /tmp/game-check.js
+          node --check /tmp/game-check.js
+          echo "Syntax check passed"
+
+  determinisic-tests:
+    name: "Gate 3: Deterministic Game Logic Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run test:ci
+        name: Jest test suite (94+ tests)
+
+  html-validity:
+    name: "Gate 4: HTML Structure Validity"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify HTML structure
+        run: |
+          # File must exist and be reasonable size
+          test -f index.html
+          SIZE=$(wc -c < index.html)
+          echo "index.html size: $SIZE bytes"
+          test "$SIZE" -gt 20000
+          test "$SIZE" -lt 200000
+          
+          # Must have required elements
+          grep -q '<!DOCTYPE html>' index.html
+          grep -q 'lang="en"' index.html
+          grep -q 'Content-Security-Policy' index.html
+          grep -q 'aria-live' index.html
+          grep -q 'prefers-reduced-motion' index.html
+          grep -q 'focus-visible' index.html
+          grep -q 'window.__nix' index.html
+          
+          # Must NOT have dangerous patterns
+          ! grep -q "prompt('Copy" index.html
+          
+          echo "HTML validity passed"
+
+  documentation:
+    name: "Gate 5: Documentation Consistency"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify docs match implementation
+        run: |
+          # Version must be consistent across files
+          HTML_VER=$(grep -oP 'STORAGE_KEY=.nix_dodge_v\K[0-9]+' index.html)
+          echo "HTML storage key version: $HTML_VER"
+          
+          README_VER=$(grep -oP 'Version:\*\* \K[0-9.]+' README.md)
+          echo "README version: $README_VER"
+          
+          DESIGN_VER=$(grep -oP 'Version:\*\* \K[0-9.]+' DESIGN.md)
+          echo "DESIGN version: $DESIGN_VER"
+          
+          # README version must match DESIGN version
+          test "$README_VER" = "$DESIGN_VER"
+          
+          # Must have test instructions
+          grep -q 'npm test' README.md
+          grep -q 'lint:static' README.md
+          
+          echo "Documentation consistency passed"
+
+  integrity:
+    name: "Gate 6: File Integrity"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify core file integrity
+        run: |
+          test -f index.html
+          test -f README.md
+          test -f DESIGN.md
+          test -f test/static-checks.js
+          test -f test/game-logic.test.js
+          grep -q "NEAR_MISS" index.html
+          grep -q "function startRun" index.html
+          grep -q "function spendCare" index.html
+          grep -q "makeScoreCard" index.html
+          grep -q "runSelfTests" index.html
+          grep -q "SPEED_MAX" index.html
+          grep -q "MAX_MULT" index.html
+          echo "Integrity check passed"
