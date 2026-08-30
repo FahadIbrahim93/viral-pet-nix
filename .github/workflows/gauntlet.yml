@@ -98,8 +98,22 @@ jobs:
           
           echo "Documentation consistency passed"
 
+  e2e-tests:
+    name: "Gate 6: Browser E2E Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npx playwright install-deps chromium
+      - run: npx playwright test --reporter=line
+        name: Playwright E2E (53 tests)
+
   integrity:
-    name: "Gate 6: File Integrity"
+    name: "Gate 7: File Integrity"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -110,6 +124,7 @@ jobs:
           test -f DESIGN.md
           test -f test/static-checks.js
           test -f test/game-logic.test.js
+          test -f test/e2e/gameplay.spec.js
           grep -q "NEAR_MISS" index.html
           grep -q "function startRun" index.html
           grep -q "function spendCare" index.html
