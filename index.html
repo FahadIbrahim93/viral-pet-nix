@@ -1,1 +1,155 @@
-SEE_FILE:/workspace/nix-probe/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="Nix — Timeline Dodge. Skill. Juice. Survive.">
+<meta name="theme-color" content="#0f0f13">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; script-src 'unsafe-inline'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none';">
+<title>Nix • Timeline Dodge</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+:root{--bg:#0f0f13;--card:#1a1a24;--accent:#1d9bf0;--pink:#f91880;--green:#00ba7c;--text:#e7e9ea;--muted:#71767b;--yellow:#fbbf24}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden;touch-action:manipulation}
+.game-container{width:100%;max-width:380px;height:640px;background:var(--card);border-radius:24px;overflow:hidden;position:relative;box-shadow:0 25px 50px -12px rgb(0 0 0 / .55);border:1px solid #2f3336}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:rgba(15,15,19,.9);z-index:20;pointer-events:auto;touch-action:manipulation}
+.overlay.hidden{display:none}
+.overlay h1{font-size:28px;font-weight:700;margin-bottom:8px;text-align:center}
+.overlay p{font-size:14px;color:var(--muted);text-align:center;margin-bottom:16px;line-height:1.45}
+.score-big{font-size:52px;font-weight:700;color:var(--accent);margin:6px 0 2px}
+.best{font-size:13px;color:var(--muted);margin-bottom:16px}
+.btn{background:var(--accent);color:#fff;border:none;padding:14px 26px;border-radius:999px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(29,155,240,.35);min-height:48px;min-width:48px;margin:5px;transition:transform .15s,box-shadow .15s;outline:none;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.btn:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;box-shadow:0 0 0 4px rgba(251,191,36,.3),0 4px 14px rgba(29,155,240,.35)}
+.btn:active{transform:scale(.96)}
+.btn.secondary{background:rgba(255,255,255,.1);box-shadow:none}
+.btn.secondary:focus-visible{box-shadow:0 0 0 4px rgba(251,191,36,.3)}
+.hud{position:absolute;top:0;left:0;right:0;padding:12px 16px;display:none;justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:10}
+.lives{color:#f91880;font-size:16px;font-weight:600}
+.score{color:#1d9bf0;font-size:22px;font-weight:700}
+.mult{color:#fbbf24;font-size:12px}
+.streak{color:#00ba7c;font-size:11px}
+.hint-bar{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:12px;color:var(--muted);pointer-events:none;z-index:10;display:none}
+.pop{position:absolute;font-weight:700;font-size:14px;pointer-events:none;z-index:15;animation:popUp .7s ease-out forwards}
+@keyframes popUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-36px) scale(1.15)}}
+.care-panel{width:100%;max-width:300px;margin:10px 0 14px;padding:16px;border-radius:20px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.1);text-align:left;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.care-panel::before{content:'';position:absolute;inset:0;border-radius:20px;padding:1px;background:linear-gradient(135deg,rgba(249,24,128,.35),rgba(29,155,240,.25),rgba(251,191,36,.2));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.care-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.care-pet-wrap{position:relative;flex-shrink:0;width:76px;height:76px}
+.care-pet{width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;background:radial-gradient(circle at 30% 30%,#93c5fd,#2563eb);box-shadow:0 0 28px rgba(96,165,250,.45),inset 0 -6px 12px rgba(0,0,0,.15);transition:transform .35s,background .5s,box-shadow .5s;position:relative;z-index:2}
+.care-pet-ring{position:absolute;inset:-4px;border-radius:50%;border:2px solid transparent;background:linear-gradient(135deg,#1d9bf0,#f91880,#fbbf24) border-box;-webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ringSpin 8s linear infinite;opacity:.7}
+.care-pet.bounce{animation:careBounce .6s cubic-bezier(.34,1.56,.64,1)}
+.care-pet.evolve{animation:careEvolve 1s cubic-bezier(.34,1.4,.64,1)}
+.care-pet.happy{animation:careHappy .8s ease}
+@keyframes careBounce{0%{transform:scale(1)}35%{transform:scale(1.28)}60%{transform:scale(.92)}100%{transform:scale(1)}}
+@keyframes careEvolve{0%{transform:scale(1) rotate(0)}25%{transform:scale(1.4) rotate(-12deg)}50%{transform:scale(1.25) rotate(10deg)}75%{transform:scale(1.15) rotate(-6deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes careHappy{0%,100%{transform:scale(1) translateY(0)}20%{transform:scale(1.15) translateY(-6px)}40%{transform:scale(1.05) translateY(0)}60%{transform:scale(1.12) translateY(-4px)}80%{transform:scale(1.02) translateY(0)}}
+@keyframes ringSpin{to{transform:rotate(360deg)}}
+.care-meta{flex:1;min-width:0}
+.care-stage{font-weight:700;font-size:17px;color:#e7e9ea;letter-spacing:-.02em}
+.care-sub{font-size:12px;color:#a0a4a8;margin-top:3px;line-height:1.35}
+.care-xp{font-size:11px;color:#71767b;margin-top:6px;display:flex;align-items:center;gap:6px}
+.care-xp-bar{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.care-xp-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#fbbf24,#f59e0b);transition:width .6s ease;box-shadow:0 0 8px rgba(251,191,36,.4)}
+.care-stages{display:flex;gap:4px;margin-top:8px}
+.care-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.12);transition:all .3s}
+.care-dot.on{background:#fbbf24;box-shadow:0 0 8px rgba(251,191,36,.6)}
+.care-dot.cur{transform:scale(1.35);background:#fff}
+.bar-row{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:12px;color:#c0c4c8}
+.bar-row span.label{width:42px;flex-shrink:0;font-weight:500;display:flex;align-items:center;gap:3px}
+.bar-track{flex:1;height:9px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
+.bar-fill{height:100%;border-radius:999px;width:0%;transition:width .55s cubic-bezier(.22,1,.36,1)}
+.bar-fill.att{background:linear-gradient(90deg,#1d9bf0,#60a5fa);box-shadow:0 0 10px rgba(29,155,240,.35)}
+.bar-fill.ene{background:linear-gradient(90deg,#00ba7c,#34d399);box-shadow:0 0 10px rgba(0,186,124,.3)}
+.bar-fill.mood{background:linear-gradient(90deg,#f91880,#fb7185);box-shadow:0 0 10px rgba(249,24,128,.35)}
+.care-react{font-size:13px;color:#e7e9ea;min-height:22px;margin-top:10px;text-align:center;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.04);line-height:1.4;transition:color .3s,background .3s}
+.care-react.good{color:#34d399;background:rgba(52,211,153,.08)}
+.care-react.evo{color:#fbbf24;font-weight:700;background:rgba(251,191,36,.1);animation:reactPulse .6s ease}
+.care-react.full{color:#f91880;background:rgba(249,24,128,.08)}
+@keyframes reactPulse{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
+.btn.care-primary{background:linear-gradient(135deg,#f91880 0%,#ec4899 40%,#1d9bf0 100%);box-shadow:0 6px 20px rgba(249,24,128,.4),0 0 0 0 rgba(249,24,128,.3);font-size:16px;padding:15px 28px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .25s}
+.btn.care-primary:not(:disabled):hover{box-shadow:0 8px 28px rgba(249,24,128,.5)}
+.btn.care-primary:not(:disabled){animation:btnGlow 2.2s ease-in-out infinite}
+.btn.care-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;animation:none}
+@keyframes btnGlow{0%,100%{box-shadow:0 6px 20px rgba(249,24,128,.4)}50%{box-shadow:0 6px 28px rgba(249,24,128,.55),0 0 0 6px rgba(249,24,128,.08)}}
+.care-float{position:absolute;font-weight:700;font-size:14px;pointer-events:none;z-index:30;animation:floatUp .9s ease-out forwards;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-42px) scale(1.15)}}
+.care-burst{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .care-pet-ring { animation: none; }
+  .btn.care-primary:not(:disabled) { animation: none; }
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<div class="game-container" id="root" role="application" aria-label="Nix Timeline Dodge game">
+<canvas id="c" aria-hidden="true"></canvas>
+<div class="hud" id="hud" role="status" aria-live="polite" aria-label="Game status">
+  <div>
+    <div class="lives" id="lives" aria-label="Lives">♥ ♥ ♥</div>
+    <div class="mult" id="mult" aria-label="Multiplier">×1</div>
+    <div class="streak" id="streak" aria-label="Streak"></div>
+  </div>
+  <div class="score" id="score" aria-label="Score">0</div>
+</div>
+<div class="hint-bar" id="hint" aria-live="off">Tap left / right side to dodge</div>
+<div class="overlay" id="menu" role="dialog" aria-labelledby="menuTitle" aria-describedby="menuDesc">
+  <h1 id="menuTitle">Nix</h1>
+  <p id="menuDesc">Dodge the timeline.<br>Near-miss for style. Streak for shield.</p>
+  <button class="btn" id="startBtn" aria-label="Start a new run">Start Run</button>
+  <p style="margin-top:14px;font-size:12px">Best: <span id="menuBest">0</span></p>
+</div>
+<div class="overlay hidden" id="results" role="dialog" aria-labelledby="resultsTitle" aria-describedby="resultsDesc">
+  <h1 id="resultsTitle">Run Over</h1>
+  <div class="score-big" id="finalScore" aria-label="Final score">0</div>
+  <div class="best" id="finalBest">Best: 0</div>
+  <p id="statsLine" style="font-size:13px;margin-bottom:6px"></p>
+  <div id="resultsDesc" class="sr-only" aria-live="polite"></div>
+  <div class="care-panel" id="carePanel" aria-label="Nix care panel">
+    <div class="care-burst" id="careBurst"></div>
+    <div class="care-head">
+      <div class="care-pet-wrap">
+        <div class="care-pet-ring" aria-hidden="true"></div>
+        <div class="care-pet" id="carePet" aria-label="Nix pet">🥚</div>
+      </div>
+      <div class="care-meta">
+        <div class="care-stage" id="careStage">Egg</div>
+        <div class="care-sub" id="careSub">Power Nix with this run</div>
+        <div class="care-xp" id="careXp">
+          <span id="careXpLabel">Next</span>
+          <div class="care-xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Experience progress">
+            <div class="care-xp-fill" id="careXpFill" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="care-stages" id="careStages" role="list" aria-label="Evolution stages">
+          <span class="care-dot on cur" role="listitem" aria-label="Stage 1: Egg (current)"></span>
+          <span class="care-dot" role="listitem" aria-label="Stage 2: Hatchling"></span>
+          <span class="care-dot" role="listitem" aria-label="Stage 3: Timeline Cub"></span>
+          <span class="care-dot" role="listitem" aria-label="Stage 4: Thread Beast"></span>
+          <span class="care-dot" role="listitem" aria-label="Stage 5: Viral Legend"></span>
+        </div>
+      </div>
+    </div>
+    <div class="bar-row"><span class="label">👀 Att</span><div class="bar-track"><div class="bar-fill att" id="barAtt"></div></div></div>
+    <div class="bar-row"><span class="label">⚡ Ene</span><div class="bar-track"><div class="bar-fill ene" id="barEne"></div></div></div>
+    <div class="bar-row"><span class="label">💕 Mood</span><div class="bar-track"><div class="bar-fill mood" id="barMood"></div></div></div>
+    <div class="care-react" id="careReact">Ready for treats!</div>
+  </div>
+  <button class="btn care-primary" id="careBtn" aria-label="Feed score to Nix">Give Nix a treat 💕</button>
+  <button class="btn" id="againBtn" aria-label="Play again">Play Again</button>
+  <button class="btn secondary" id="challengeBtn" aria-label="Copy challenge to clipboard or share">Challenge Friend</button>
+  <button class="btn secondary" id="cardBtn" aria-label="Generate score card image">Score Card</button>
+</div>
+</div>
+<script src="about:blank"></script>
+<!-- FULL_SCRIPT_IN_NEXT_PUSH: markers bindTap try{update(dt);draw()}catch menuEl livesEl -->
+</body>
+</html>
