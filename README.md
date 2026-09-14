@@ -3,7 +3,7 @@
 **Skill-based viral pet.** Dodge the timeline. Survive. Collect hearts. Evolve Nix.
 
 **Live:** [https://viral-pet-nix.vercel.app](https://viral-pet-nix.vercel.app)  
-**Version:** 2.4.1
+**Version:** 2.4.2
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Single File](https://img.shields.io/badge/Single%20File-HTML-brightgreen)](index.html)
@@ -21,6 +21,13 @@
 No install. No build. Works offline after first load.
 
 ---
+
+## Recent fixes (2.4.2)
+
+- **Mobile Start Run:** `touch-action: none` is canvas-only so overlay taps work; `bindTap` handles click + touch/pen.
+- **Resilient loop:** `update`/`draw` errors no longer kill `requestAnimationFrame`.
+- Still a **single-file** `index.html` (no external `game.js`).
+
 
 ## Core loop
 
