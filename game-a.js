@@ -1,3 +1,3 @@
 'use strict';
-/* PLACEHOLDER — will replace with full */
-console.log('nix-a');
+const STORAGE_KEY='nix_dodge_v24';
+console.log('nix game-a loading');
