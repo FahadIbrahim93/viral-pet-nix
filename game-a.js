@@ -1,1 +1,3 @@
-@/workspace/nix-probe/pr-bundle/split-ship/game-a.js
+'use strict';
+/* Nix game-a placeholder replaced by full file — see next commit */
+console.log('nix game-a loading');
