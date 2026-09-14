@@ -1,9 +1,9 @@
 # Nix — Timeline Dodge
 
-**Skill-based viral pet.** Dodge the timeline. Survive. Collect hearts. Evolve Nix.
+**Skill-based viral pet.** Dodge the timeline. Near-miss for CLEAN. Evolve Nix.
 
-**Live:** [https://viral-pet-nix.vercel.app](https://viral-pet-nix.vercel.app)  
-**Version:** 2.4.2
+**Live:** https://viral-pet-nix.vercel.app  
+**Version:** 2.5.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Single File](https://img.shields.io/badge/Single%20File-HTML-brightgreen)](index.html)
@@ -14,20 +14,21 @@
 
 1. Open the [live demo](https://viral-pet-nix.vercel.app) or open `index.html` locally
 2. Tap **Start Run**
-3. Tap left / right half of the card (or arrow keys) to change lanes
+3. Tap left / right half (or `A`/`D` / arrows) to change lanes
 4. Dodge posts · grab hearts · near-miss for **CLEAN**
-5. After the run → **Give Nix +score**, **Challenge Friend**, or **Score Card**
+5. After the run → Play Again · Challenge Friend
 
 No install. No build. Works offline after first load.
 
 ---
 
-## Recent fixes (2.4.2)
+## What 2.5 fixed
 
-- **Mobile Start Run:** `touch-action: none` is canvas-only so overlay taps work; `bindTap` handles click + touch/pen.
-- **Resilient loop:** `update`/`draw` errors no longer kill `requestAnimationFrame`.
-- Still a **single-file** `index.html` (no external `game.js`).
+- **Start Run stuck on main menu** — root cause was a syntax error that prevented the entire game script from loading. Fixed operator precedence, dual `pointerup`+`click` binding, phase-based menu hide, canvas `pointer-events` only while running.
+- Pure **single-file** `index.html` again (no external `game-a.js` / `game-b.js` required for play).
+- Floored score display on results.
 
+---
 
 ## Core loop
 
@@ -35,104 +36,30 @@ No install. No build. Works offline after first load.
 |--------|--------|
 | Dodge posts | Survive |
 | Near-miss (CLEAN) | Score + streak + multiplier |
-| Collect hearts | Score × mult (gold = risk hearts) |
-| Streak ×8 | Temporary shield |
-| Blue Check (power heart) | Rare slow-mo |
-| Run ends | Feed Nix · challenge text · score card image |
-
----
-
-## Running Nix
-
-- Side-view pet with animated legs (cycle scales with speed)
-- Arms visible at Stage 2+ (Timeline Cub)
-- Motion dust particles at high speed
-- Eyes track lane direction
-- Expression reacts to lives, multiplier, and streak
-- Reduced-motion: all animations disabled, pet rendered statically
-
----
-
-## Care panel
-
-- Larger living pet with spinning stage ring
-- Stage XP bar + progress dots
-- Floating +Att / +Ene / +Mood pops
-- Heart particle burst on feed
-- Personality reaction lines
+| Collect hearts | Restore risk hearts |
+| Blue Check | Rare slow-mo + mult boost |
+| Streak up to ×8 | High score multiplier |
+| Run ends | Challenge text · next run |
 
 Stages: Egg → Hatchling → Timeline Cub → Thread Beast → Viral Legend
 
 ---
 
-## Share on X
-
-- **Challenge Friend** — copies a ready-to-paste challenge (native share sheet on mobile, clipboard fallback)
-- **Score Card** — generates a shareable PNG image (native share with file, or download fallback)
-
-Example text:
-
-```
-I scored 1840 on Nix Timeline Dodge
-12 CLEANs · ×4.2 · Nix is Timeline Cub
-Beat me → https://viral-pet-nix.vercel.app
-#ViralPet #Nix
-```
-
----
-
 ## Controls
 
-- **Touch:** tap left half → left lane · right half → right lane
-- **Keyboard:** `←` `→` or `A` `D`
-- All buttons are keyboard-focusable with visible focus indicators
-
----
-
-## Accessibility
-
-- `aria-live` region announces score/HUD changes to screen readers
-- Canvas has `aria-hidden="true"`, game container has `role="application"`
-- Buttons have descriptive `aria-label` attributes
-- Visible `:focus-visible` indicators on all interactive elements
-- `prefers-reduced-motion`: disables all animations and canvas effects
-- Touch targets are ≥48px minimum
-- Score card fallback via `<textarea>` + `document.execCommand('copy')` for older browsers
-
----
-
-## Security
-
-- Content Security Policy: `default-src 'none'`, `script-src 'unsafe-inline'`, `style-src 'unsafe-inline' https://fonts.googleapis.com`
-- localStorage data validated and clamped on load (no trust in stored values)
-- No `innerHTML` with untrusted data — all DOM manipulation uses `createElement`/`textContent`
-- No external script dependencies — single self-contained file
-- Clipboard share uses `navigator.clipboard` → `execCommand('copy')` fallback chain
-
----
-
-## Testing & CI
-
-```bash
-npm install
-npm test              # Run 99 Jest unit tests (jsdom)
-npm run test:e2e      # Run 53 Playwright E2E tests (headless)
-npm run lint:static   # Run 36 static invariant checks
-npm run gauntlet      # Run full CI gauntlet (static + unit + E2E)
-```
+- **Touch / click:** left half → left lane · right half → right lane (or swipe)
+- **Keyboard:** `←` `→` or `A` `D` · Enter / Space to start
+- Test hooks: `window.__nixStart()`, `window.__controlsTest`
 
 ---
 
 ## Design constraints
 
-See [DESIGN.md](DESIGN.md).
-
-- Feels native inside an X-style card (~320–400px)
-- Short skill sessions
+- Card-sized (~320–400 px) for X-style feed / webview
+- Short skill sessions, not idle tapping
 - **Single file** — no bundler, no framework, no backend
-- No external image/audio assets
-- Bounded particle pool (64 particles, free-list)
-- Bounded timestep (max 45ms) for stable physics
+- Bounded particle pool (64), dt cap, localStorage key `nix_dodge_v24`
+- Built for **X — the future super app**
 
 ---
 
@@ -141,11 +68,15 @@ See [DESIGN.md](DESIGN.md).
 ```bash
 git clone https://github.com/FahadIbrahim93/viral-pet-nix.git
 cd viral-pet-nix
-open index.html
+open index.html   # or any static server
 ```
+
+## Deploy
+
+Vercel project linked to this repo. Push to `main` → auto-deploy to https://viral-pet-nix.vercel.app
+
+`vercel.json` sets no-cache headers so the latest game is always served.
 
 ## License
 
 MIT — see [LICENSE](LICENSE).
-
-Built for **X — the future super app**.
