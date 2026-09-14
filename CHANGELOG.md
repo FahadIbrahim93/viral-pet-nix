@@ -2,6 +2,20 @@
 
 All notable changes to **Nix Timeline Dodge** are documented here.
 
+## [2.4.2] — 2026-09-14
+
+### Fixed
+- **Mobile Start Run stuck on main menu:** `body { touch-action: none }` was swallowing taps on overlay buttons. `touch-action: none` is now canvas-only; body/overlay/buttons use `touch-action: manipulation`.
+- **Touch / pen Start Run:** added `bindTap` (click + pointerup for touch/pen) on Start Run and Play Again.
+- **Null-safe HUD / startRun:** guards missing DOM nodes so a partial mount cannot throw before the loop starts.
+- **Game loop resilience:** `requestAnimationFrame` update/draw wrapped in try/catch so one frame error cannot kill the loop.
+
+### Architecture
+- Remains a **single-file** `index.html` (inline script) for CSP `script-src 'unsafe-inline'` and zero external game assets. Do not split to `game.js` unless CSP is updated and the full script ships.
+
+### Deploy
+- Vercel project `viral-pet-nix` auto-deploys `main`. Production alias: https://viral-pet-nix.vercel.app/
+
 ## [2.4.1] — 2026-08-30
 
 ### Major Features
