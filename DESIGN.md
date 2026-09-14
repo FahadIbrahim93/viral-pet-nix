@@ -25,7 +25,7 @@ Start Run → dodge posts (3 lanes) → collect hearts → multiplier/streak →
 - **Accessibility:** aria-live HUD, aria-label on all controls, visible focus indicators, prefers-reduced-motion (CSS + runtime), semantic roles, sr-only utility
 - **Security:** CSP meta tag, localStorage validation + clamping, safe DOM manipulation (no innerHTML with untrusted data), no remote script dependencies
 - **Performance:** bounded timestep (max 45ms), bounded particle pool, no allocations in hot loop, resize/DPR correctness
-- Deterministic tests via Jest + jsdom (99 tests), Playwright E2E (53 tests), static invariant checks (36), CI 7-gate gauntlet
+- Deterministic tests via Jest + jsdom (99 tests), Playwright E2E (53 tests), static invariant checks (38), CI 7-gate gauntlet
 
 ## Stages
 
@@ -64,8 +64,8 @@ index.html (single file)
     └── window.__nix exposure (for testing)
 
 test/
-├── static-checks.js — CSP, a11y, security, doc consistency (36 checks)
-└── game-logic.test.js — Jest + jsdom (94 tests)
+├── static-checks.js — CSP, a11y, security, doc consistency (38 checks)
+└── game-logic.test.js — Jest + jsdom (99 tests)
 
 .github/workflows/
 └── gauntlet.yml — CI: static checks + Jest tests + syntax + security
