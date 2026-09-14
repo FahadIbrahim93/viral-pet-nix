@@ -311,7 +311,9 @@ test.describe('Game over and restart', () => {
       floats: window.__nix.floats.length,
     }));
     expect(state.lives).toBe(3);
-    expect(state.dist).toBe(0);
+    // The animation loop advances between the click and this assertion.
+    // A fresh run must still be near zero, not retain the previous run.
+    expect(state.dist).toBeLessThan(50);
     expect(state.hearts).toBe(0);
     expect(state.mult).toBe(1);
     expect(state.streak).toBe(0);
