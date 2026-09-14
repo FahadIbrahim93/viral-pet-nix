@@ -1,0 +1,1 @@
+@/workspace/nix-probe/pr-bundle/split-ship/game-a.js
