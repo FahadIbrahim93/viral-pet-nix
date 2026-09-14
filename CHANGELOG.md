@@ -13,6 +13,7 @@ All notable changes to **Nix Timeline Dodge** are documented here.
 
 ### Deploy
 - Push to `main` deploys to https://viral-pet-nix.vercel.app via Vercel.
+- Added documented CI gates, release metadata checks, Vercel security headers, contribution guidance, and private vulnerability reporting.
 
 ## [2.4.2] — 2026-09-14
 

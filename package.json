@@ -1,15 +1,19 @@
 {
   "name": "viral-pet-nix",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "private": true,
   "description": "Nix — Timeline Dodge. Skill-based viral pet game.",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/.bin/jest --forceExit",
-    "test:ci": "node --experimental-vm-modules node_modules/.bin/jest --forceExit --ci --reporters=default",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit",
+    "test:ci": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit --ci --reporters=default",
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed",
     "lint:static": "node test/static-checks.js",
-    "gauntlet": "npm run lint:static && npm run test:ci && npm run test:e2e && echo 'ALL GATES PASSED'"
+    "gauntlet": "npm run lint:static && npm run test:ci && npm run test:e2e && echo 'ALL GATES PASSED'",
+    "verify:version": "node -e \"const fs=require('fs');const p=require('./package.json');const read=f=>fs.readFileSync(f,'utf8');const expected=p.version;const files=['README.md','DESIGN.md','CHANGELOG.md'];const missing=files.filter(f=>!read(f).includes(expected));if(missing.length){console.error('Version '+expected+' missing from: '+missing.join(', '));process.exit(1)}console.log('Version '+expected+' is documented consistently.')\""
+  },
+  "engines": {
+    "node": ">=20"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

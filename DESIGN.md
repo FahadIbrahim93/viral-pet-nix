@@ -1,7 +1,7 @@
 # Viral Pet (Nix) — Design Doc
 
-**Version:** 2.4.1  
-**Date:** 2026-08-30  
+**Version:** 2.5.0
+**Date:** 2026-09-14
 **Status:** Timeline Dodge + running pet + care + share + hardened
 
 ## Goal
@@ -12,7 +12,7 @@ Skill/reaction first 15–20s. Near-miss mastery, pattern variety, strong feedba
 
 Start Run → dodge posts (3 lanes) → collect hearts → multiplier/streak → survive → results → spend score on Nix / challenge / score card / retry.
 
-## Features (v2.4.1)
+## Features (v2.5.0)
 
 - Near-miss CLEAN (window 34px) + stronger juice
 - Pattern waves, risk hearts, streak shield (×8), Blue Check slow-mo
@@ -80,4 +80,5 @@ test/
 - **2.3** — Feel polish, care personality, challenge text + score card
 - **2.3.1** — Expanded tests, reduced-motion, a11y, CSP, CI integrity
 - **2.4** — Side-view running Nix with arms/legs, motion dust, start fix
-- **2.4.1** — Hardening: CSP, a11y (aria-live, focus-visible, reduced-motion), security (safe DOM, localStorage validation), running pet limbs, 152 tests (99 unit + 53 E2E), 7-gate CI gauntlet, dead code removal, viral loop improvements, documentation reconciliation
+- **2.4.1** — Hardening: CSP, a11y (aria-live, focus-visible, reduced-motion), security (safe DOM, localStorage validation), running pet limbs, 152 tests (99 unit + 53 E2E), 7-gate CI gauntlet, dead code removal, viral loop improvements
+- **2.5.0** — Reliable mobile start flow, single-file runtime restored as canonical, integer result scores, and deployment/documentation consistency

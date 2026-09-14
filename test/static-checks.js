@@ -11,6 +11,8 @@ const ROOT = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
 const design = fs.readFileSync(path.join(ROOT, 'DESIGN.md'), 'utf8');
+const packageVersion = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
+const changelog = fs.readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8');
 
 let passed = 0;
 let failed = 0;
@@ -69,8 +71,10 @@ check(script.includes('selfTestResults'), 'Self-test results exposed');
 check(script.includes('runSelfTests') || script.includes('runTests'), 'Self-tests present');
 
 // ── Documentation consistency ──
-// Version should be consistent
-check(readme.includes('2.4') || readme.includes('2.4.1'), 'README version updated to 2.4+');
+// Version should be documented consistently
+check(readme.includes(`**Version:** ${packageVersion}`), 'README version matches package.json');
+check(design.includes(`**Version:** ${packageVersion}`), 'DESIGN version matches package.json');
+check(changelog.includes(`[${packageVersion}]`), 'CHANGELOG contains current release');
 
 // No false feature claims
 const hasRunningPetCode = script.includes('legAngle') || script.includes('running legs');
