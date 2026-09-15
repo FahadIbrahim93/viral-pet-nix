@@ -1,1 +1,158 @@
-<PLACEHOLDER_WILL_FAIL>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="Nix — Timeline Dodge. Skill-first endless runner.">
+<meta name="theme-color" content="#0b0b12">
+<title>Nix • Timeline Dodge</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
+:root{--bg:#07070c;--card:#12121a;--accent:#1d9bf0;--pink:#f91880;--text:#e7e9ea;--muted:#8b8f98;--gold:#fbbf24}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-ui,sans-serif;display:flex;justify-content:center;align-items:center;overflow:hidden;touch-action:manipulation}
+.wrap{width:100%;max-width:400px;height:min(92dvh,720px);background:var(--card);border-radius:24px;overflow:hidden;position:relative;box-shadow:0 25px 60px -12px rgba(0,0,0,.7);border:1px solid #2a2a36}
+canvas{display:block;width:100%;height:100%}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(180deg,rgba(7,7,12,.55),rgba(7,7,12,.92));z-index:20}
+.overlay.hidden{display:none!important}
+.tag{font-size:11px;font-weight:600;letter-spacing:.28em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
+h1{font-size:48px;font-weight:700;letter-spacing:-.03em}
+.sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.45;max-width:260px;margin:10px 0 22px}
+.btn{background:var(--accent);color:#fff;border:none;padding:14px 28px;border-radius:999px;font-weight:700;font-size:16px;cursor:pointer;font-family:inherit;min-height:52px;box-shadow:0 8px 28px rgba(29,155,240,.45)}
+.btn:active{transform:scale(.96)}
+.btn.secondary{background:rgba(255,255,255,.1);box-shadow:none;font-size:13px}
+.score-big{font-size:52px;font-weight:800;color:var(--accent);margin:4px 0}
+.muted{font-size:12px;color:var(--muted)}
+.hud{position:absolute;top:10px;left:12px;right:12px;display:none;justify-content:space-between;pointer-events:none;z-index:10;font-weight:600}
+.hud .sc{font-size:22px;color:var(--accent)}
+.hud .lv{color:var(--pink);font-size:14px}
+.hint{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted);z-index:10;display:none}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+<canvas id="c" width="400" height="720"></canvas>
+<div class="hud" id="hud"><div class="lv" id="lives">♥ ♥ ♥</div><div class="sc" id="score">0</div></div>
+<div class="hint" id="hint">Tap left / right · A/D · ↑ jump</div>
+<div class="overlay" id="menu">
+  <div class="tag">Timeline Dodge</div>
+  <h1>Nix</h1>
+  <p class="sub">Skill-first runner. Near-miss for CLEAN. Jump low posts. Raise Nix.</p>
+  <button type="button" class="btn" id="startBtn">Start Run</button>
+  <p class="muted" style="margin-top:12px">Best: <span id="bestLabel">0</span></p>
+</div>
+<div class="overlay hidden" id="results">
+  <h1 style="font-size:22px">Run Over</h1>
+  <div class="score-big" id="resScore">0</div>
+  <p class="muted" id="resStats"></p>
+  <button type="button" class="btn" id="againBtn" style="margin-top:12px">Play Again</button>
+</div>
+</div>
+<script>
+(function(){
+"use strict";
+const canvas=document.getElementById("c"),ctx=canvas.getContext("2d");
+const $=id=>document.getElementById(id);
+let W=400,H=720,dpr=Math.min(devicePixelRatio||1,2);
+let phase="menu",targetLane=1,visualLane=1,lives=3,dist=0,score=0,speed=2.7;
+let posts=[],air=0,jumpVel=0,time=0,best=0,nearMisses=0,mult=1,streak=0;
+try{best=JSON.parse(localStorage.getItem("nix_dodge_v26")||"{}").best||0}catch(e){}
+$("bestLabel").textContent=String(best);
+function resize(){const r=canvas.parentElement.getBoundingClientRect();W=r.width;H=r.height;canvas.width=(W*dpr)|0;canvas.height=(H*dpr)|0;ctx.setTransform(dpr,0,0,dpr,0,0)}
+function laneX(l,y){const t=Math.max(0,Math.min(1,(y||H*0.8)/H));const spread=W*(0.16+t*t*(3-2*t)*0.28);return W/2+(l-1)*spread}
+function startRun(){
+  if(phase==="running")return;
+  phase="running";$("menu").classList.add("hidden");$("results").classList.add("hidden");
+  $("hud").style.display="flex";$("hint").style.display="block";
+  lives=3;dist=0;score=0;speed=2.7;posts=[];air=0;targetLane=1;visualLane=1;nearMisses=0;mult=1;streak=0;
+}
+function endRun(){
+  phase="results";score=Math.floor(dist*0.16+nearMisses*30);
+  if(score>best){best=score;try{localStorage.setItem("nix_dodge_v26",JSON.stringify({best}))}catch(e){}}
+  $("hud").style.display="none";$("hint").style.display="none";$("results").classList.remove("hidden");
+  $("resScore").textContent=String(score);$("resStats").textContent=nearMisses+" CLEAN · Best "+best;
+}
+function nudge(d){if(phase!=="running")return;const n=targetLane+d;if(n>=0&&n<=2)targetLane=n}
+function doJump(){if(phase!=="running"||air>0)return;air=1;jumpVel=2.4}
+function bindStart(btn,fn){if(!btn)return;let lock=false;const go=e=>{if(lock)return;lock=true;if(e){e.preventDefault();e.stopPropagation()}fn();setTimeout(()=>lock=false,400)};btn.addEventListener("pointerup",go,{passive:false});btn.addEventListener("click",go)}
+bindStart($("startBtn"),startRun);bindStart($("againBtn"),startRun);
+window.__nixStart=startRun;
+window.addEventListener("keydown",e=>{
+  if(e.repeat)return;
+  if((e.key==="Enter"||e.key===" ")&&phase!=="running"){e.preventDefault();startRun();return}
+  if(phase!=="running")return;
+  if(e.key==="a"||e.key==="ArrowLeft"||e.key==="A")nudge(-1);
+  if(e.key==="d"||e.key==="ArrowRight"||e.key==="D")nudge(1);
+  if(e.key==="w"||e.key==="ArrowUp"||e.key==="W")doJump();
+});
+canvas.addEventListener("pointerdown",e=>{
+  if(phase!=="running")return;
+  const x=e.clientX-canvas.getBoundingClientRect().left;
+  if(e.clientY-canvas.getBoundingClientRect().top<H*0.35)doJump();
+  else nudge(x<W/2?-1:1);
+});
+function loop(ts){
+  time=ts/1000;
+  if(phase==="running"){
+    speed=Math.min(7,2.7+dist*0.0005);dist+=speed;score=Math.floor(dist*0.16+nearMisses*30);
+    visualLane+=(targetLane-visualLane)*0.18;
+    if(air>0){jumpVel-=0.12;air+=jumpVel;if(air<=0)air=0}
+    if(Math.random()<0.018+speed*0.002){
+      const open=(Math.random()*3)|0;
+      for(let ln=0;ln<3;ln++)if(ln!==open)posts.push({lane:ln,y:-40,kind:Math.random()<0.3?"low":"mid",hit:false,near:false});
+    }
+    const py=H*0.8-air*48,px=laneX(visualLane,py);
+    posts.forEach(p=>{
+      p.y+=speed*3.2;
+      if(!p.hit&&Math.abs(p.lane-visualLane)<0.45&&Math.abs(p.y-py)<28){
+        if(air>0.2&&p.kind==="low"){p.near=true}
+        else{p.hit=true;lives--;if(lives<=0)endRun()}
+      }else if(!p.near&&!p.hit&&p.y>py+5&&Math.abs(p.lane-visualLane)>0.5&&Math.abs(laneX(p.lane,p.y)-px)<50){
+        p.near=true;nearMisses++;streak++;mult=Math.min(8,mult+0.2);
+      }
+    });
+    posts=posts.filter(p=>p.y<H+50);
+    $("score").textContent=String(score);
+    $("lives").textContent="♥ ".repeat(Math.max(0,lives)).trim()||"—";
+  }
+  ctx.fillStyle="#07070c";ctx.fillRect(0,0,W,H);
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"#0a1020");sky.addColorStop(1,"#07070c");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgba(255,255,255,.3)";
+  for(let i=0;i<20;i++)ctx.fillRect((i*97+time*20)%W,(i*53)%(H*0.3),1.5,1.5);
+  ctx.strokeStyle="rgba(29,155,240,.25)";ctx.lineWidth=2;
+  for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(laneX(i,H*0.2),H*0.2);ctx.lineTo(laneX(i,H),H);ctx.stroke()}
+  posts.forEach(p=>{
+    const sc=0.3+(p.y/H)*0.7,x=laneX(p.lane,p.y),h=(p.kind==="low"?36:56)*sc,w=60*sc;
+    ctx.fillStyle=p.kind==="low"?"#1a2a4a":"#2a2a36";
+    ctx.beginPath();ctx.roundRect(x-w/2,p.y,w,h,8*sc);ctx.fill();
+    ctx.strokeStyle="rgba(29,155,240,.35)";ctx.lineWidth=1.5;ctx.stroke();
+  });
+  const py=H*0.8-air*48,px=laneX(visualLane,py);
+  ctx.save();ctx.translate(px,py);
+  const bounce=phase==="running"&&air<=0?Math.abs(Math.sin(time*14))*3:0;
+  ctx.translate(0,-bounce);
+  const grd=ctx.createRadialGradient(-6,-10,4,0,0,22);
+  grd.addColorStop(0,"#93c5fd");grd.addColorStop(1,"#3b82f6");
+  ctx.fillStyle=grd;ctx.beginPath();ctx.ellipse(0,0,20,22,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#0f172a";ctx.beginPath();ctx.ellipse(-6,-3,4,4.5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(6,-3,4,4.5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(-5,-4,1.3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(7,-4,1.3,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="rgba(249,24,128,.4)";ctx.beginPath();ctx.arc(-12,4,4,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(12,4,4,0,Math.PI*2);ctx.fill();
+  if(phase==="running"){
+    const swing=Math.sin(time*14)*8;
+    ctx.strokeStyle="#3b82f6";ctx.lineWidth=5;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(-10,14);ctx.quadraticCurveTo(-14,22+swing,-10,28+swing);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(10,14);ctx.quadraticCurveTo(14,22-swing,10,28-swing);ctx.stroke();
+  }
+  ctx.restore();
+  requestAnimationFrame(loop);
+}
+resize();addEventListener("resize",resize);requestAnimationFrame(loop);
+console.info("[Nix] Timeline Dodge playable");
+})();
+</script>
+</body>
+</html>
