@@ -26,9 +26,6 @@ Single static HTML. No account, backend, or external assets. Best score in `loca
 - Dual Start binding (pointerup + click) — no stuck menu
 - Enter / Space to start
 
-## Full AAA build (local)
-
-Complete Claude v3.0 (Viral Surge, care panel, fairness pause, generative audio, combo callouts, self-tests) is in the workspace at `artifacts/viral-pet/index.html` (~71 KB).
 
 ## License
 
